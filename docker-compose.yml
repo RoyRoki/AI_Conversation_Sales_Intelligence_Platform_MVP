@@ -1,0 +1,84 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: omx_postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-omx_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-omx_password}
+      POSTGRES_DB: ${POSTGRES_DB:-omx_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-omx_user} -d ${POSTGRES_DB:-omx_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - omx_network
+
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: omx_chromadb
+    ports:
+      - "8000:8000"
+    volumes:
+      - chromadb_data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ANONYMIZED_TELEMETRY=FALSE
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/v2/heartbeat || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - omx_network
+
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: omx_api
+    ports:
+      - "8080:8080"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - TENANT_ID=${TENANT_ID}
+      - DB_TYPE=postgres
+      - DATABASE_URL=postgres://${POSTGRES_USER:-omx_user}:${POSTGRES_PASSWORD:-omx_password}@postgres:5432/${POSTGRES_DB:-omx_db}?sslmode=disable
+      - CHROMA_URL=http://chromadb:8000
+      - PORT=8080
+      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=${POSTGRES_USER:-omx_user}
+      - DEFAULT_ADMIN_TENANT_ID=${DEFAULT_ADMIN_TENANT_ID:-OMX26}
+      - DEFAULT_ADMIN_EMAIL=${DEFAULT_ADMIN_EMAIL:-OMX2026@gmail.com}
+      - DEFAULT_ADMIN_PASSWORD=${DEFAULT_ADMIN_PASSWORD:-OMX@2026}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      chromadb:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - omx_network
+
+volumes:
+  postgres_data:
+    driver: local
+  chromadb_data:
+    driver: local
+
+networks:
+  omx_network:
+    driver: bridge
+

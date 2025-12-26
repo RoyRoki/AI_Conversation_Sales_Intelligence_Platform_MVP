@@ -1,0 +1,33 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Docker volumes
+postgres_data/
+chromadb_data/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+tmp/
+temp/
+
+# Documentation and internal files
+Test/
+Task/
+Docs/
+LOGIN_CREDENTIALS.md
+SETUP_COMPLETE.md
+START_HERE.md
