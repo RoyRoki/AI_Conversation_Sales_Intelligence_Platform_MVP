@@ -75,9 +75,6 @@ The platform follows **Clean Architecture** principles with strict layer boundar
 [![Watch the video](https://img.youtube.com/vi/MiJjFnMWRK8/maxresdefault.jpg)](https://youtu.be/MiJjFnMWRK8?si=aeVqrEPlruqtTuJF)
 
 **🔗 Direct Link**: [https://youtu.be/MiJjFnMWRK8?si=aeVqrEPlruqtTuJF](https://youtu.be/MiJjFnMWRK8?si=aeVqrEPlruqtTuJF)
-
-> ⚠️ **Note**: GitHub markdown doesn't support embedded video players for security reasons. Click the thumbnail image above or use the direct link to watch the video on YouTube.
-
 ### Layer Responsibilities
 
 #### 1. API Layer (`internal/api/handlers/`)
