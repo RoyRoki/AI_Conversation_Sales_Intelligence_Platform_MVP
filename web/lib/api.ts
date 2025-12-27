@@ -152,9 +152,10 @@ class ApiClient {
   }
 
   // Agent Assist
-  async getSuggestions(conversationId: string): Promise<SuggestionsResponse> {
+  async getSuggestions(conversationId: string, regenerate: boolean = false): Promise<SuggestionsResponse> {
     try {
-      const response = await this.client.post(`/api/conversations/${conversationId}/suggestions`);
+      const params = regenerate ? { regenerate: 'true' } : {};
+      const response = await this.client.post(`/api/conversations/${conversationId}/suggestions`, {}, { params });
       const backendResponse = response.data.suggestions || response.data;
       
       // Handle case where backend returns error in response

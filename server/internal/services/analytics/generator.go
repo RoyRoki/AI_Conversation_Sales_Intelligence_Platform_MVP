@@ -1058,8 +1058,8 @@ type DashboardMetrics struct {
 
 // GetDashboardMetrics calculates dashboard metrics for a tenant
 func (s *AnalyticsService) GetDashboardMetrics(tenantID string) (DashboardMetrics, error) {
-	// Get all conversations for tenant (with reasonable limit)
-	conversations, err := s.conversationStorage.ListConversations(tenantID, 1000, 0)
+	// Get all conversations for tenant (with reasonable limit, nil customerID for admin/agent access to all conversations)
+	conversations, err := s.conversationStorage.ListConversations(tenantID, nil, 1000, 0)
 	if err != nil {
 		return DashboardMetrics{}, err
 	}

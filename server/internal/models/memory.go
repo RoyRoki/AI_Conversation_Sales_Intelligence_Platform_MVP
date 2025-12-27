@@ -17,3 +17,4 @@ type CustomerMemory struct {
 	UpdatedAt         time.Time `json:"updated_at"`
 }
 
+

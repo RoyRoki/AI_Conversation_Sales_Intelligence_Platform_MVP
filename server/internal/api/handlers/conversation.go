@@ -181,10 +181,22 @@ func (h *ConversationHandler) GetConversation(c *gin.Context) {
 		return
 	}
 
+	// Get user ID and role from context
+	userID := c.GetString("user_id")
+	userRole := c.GetString("role")
+
 	conv, messages, err := h.ingestionService.GetConversation(tenantID, conversationID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
+	}
+
+	// For customers, ensure they can only access their own conversations
+	if userRole == "customer" {
+		if conv.CustomerID == nil || *conv.CustomerID != userID {
+			c.JSON(http.StatusForbidden, gin.H{"error": "access denied: you can only access your own conversations"})
+			return
+		}
 	}
 
 	// Populate customer email if customer_id exists
@@ -238,7 +250,18 @@ func (h *ConversationHandler) ListConversations(c *gin.Context) {
 		return
 	}
 
-	conversations, err := h.ingestionService.ListConversations(tenantID, req.Limit, req.Offset)
+	// Get user ID and role from context
+	userID := c.GetString("user_id")
+	userRole := c.GetString("role")
+
+	// For customers, only show their own conversations
+	// For agents/admins, show all conversations in the tenant
+	var customerID *string
+	if userRole == "customer" {
+		customerID = &userID
+	}
+
+	conversations, err := h.ingestionService.ListConversations(tenantID, customerID, req.Limit, req.Offset)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

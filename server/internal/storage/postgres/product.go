@@ -173,3 +173,4 @@ func (s *ProductStorage) DeleteProduct(tenantID, productID string) error {
 	return nil
 }
 
+

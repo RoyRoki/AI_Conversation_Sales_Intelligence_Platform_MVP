@@ -70,6 +70,8 @@ The platform follows **Clean Architecture** principles with strict layer boundar
 └──────────────┘  └─────────────────────┘  └─────────────┘
 ```
 
+📹 **Video Explanation**: [https://youtu.be/MiJjFnMWRK8?si=aeVqrEPlruqtTuJF](https://youtu.be/MiJjFnMWRK8?si=aeVqrEPlruqtTuJF)
+
 ### Layer Responsibilities
 
 #### 1. API Layer (`internal/api/handlers/`)

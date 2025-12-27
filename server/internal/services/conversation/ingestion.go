@@ -212,8 +212,9 @@ func (s *IngestionService) GetConversation(tenantID, conversationID string) (*mo
 }
 
 // ListConversations lists conversations for a tenant
-func (s *IngestionService) ListConversations(tenantID string, limit, offset int) ([]*models.Conversation, error) {
-	conversations, err := s.conversationStorage.ListConversations(tenantID, limit, offset)
+// If customerID is provided, only conversations for that customer are returned (for customer role)
+func (s *IngestionService) ListConversations(tenantID string, customerID *string, limit, offset int) ([]*models.Conversation, error) {
+	conversations, err := s.conversationStorage.ListConversations(tenantID, customerID, limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list conversations: %w", err)
 	}

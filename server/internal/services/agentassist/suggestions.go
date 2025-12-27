@@ -74,8 +74,9 @@ func NewAgentAssistService(
 
 // GetReplySuggestions generates AI reply suggestions for agents
 // Flow: check cache → context retrieval → AI generation → rule validation → confidence scoring → return suggestions
-func (s *AgentAssistService) GetReplySuggestions(tenantID, conversationID string) (*SuggestionsResponse, error) {
-	log.Printf("[AGENT_ASSIST] generating suggestions conversation=%s tenant=%s", conversationID, tenantID)
+// If forceRegenerate is true, cache will be cleared and new suggestions will be generated
+func (s *AgentAssistService) GetReplySuggestions(tenantID, conversationID string, forceRegenerate bool) (*SuggestionsResponse, error) {
+	log.Printf("[AGENT_ASSIST] generating suggestions conversation=%s tenant=%s forceRegenerate=%v", conversationID, tenantID, forceRegenerate)
 
 	// 1. Retrieve conversation context
 	messages, err := s.conversationStorage.GetMessagesByConversation(tenantID, conversationID)
@@ -94,8 +95,16 @@ func (s *AgentAssistService) GetReplySuggestions(tenantID, conversationID string
 	lastCustomerMessageID := s.extractLastCustomerMessageID(messages)
 	log.Printf("[AGENT_ASSIST] cache check: storage=%v last_message_id=%s", s.suggestionsStorage != nil, lastCustomerMessageID)
 	
-	// 1b. Check cache for existing suggestions (before getting metadata since it can change)
-	if s.suggestionsStorage != nil && lastCustomerMessageID != "" {
+	// 1b. If forceRegenerate is true, clear the cache first
+	if forceRegenerate && s.suggestionsStorage != nil && lastCustomerMessageID != "" {
+		log.Printf("[AGENT_ASSIST] force regenerate requested, clearing cache for conversation=%s last_message=%s", conversationID, lastCustomerMessageID)
+		if err := s.suggestionsStorage.DeleteSuggestions(conversationID); err != nil {
+			log.Printf("[AGENT_ASSIST] failed to delete cached suggestions (non-fatal): %v", err)
+		}
+	}
+	
+	// 1c. Check cache for existing suggestions (before getting metadata since it can change)
+	if !forceRegenerate && s.suggestionsStorage != nil && lastCustomerMessageID != "" {
 		cached, err := s.suggestionsStorage.GetSuggestions(conversationID, lastCustomerMessageID)
 		if err == nil && cached != nil {
 			log.Printf("[AGENT_ASSIST] cache hit for conversation=%s last_message=%s", conversationID, lastCustomerMessageID)

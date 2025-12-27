@@ -101,3 +101,4 @@ func (s *EmbeddingService) EmbedAndStore(collection string, text string, content
 	return s.StoreEmbedding(collection, text, embedding, metadata)
 }
 
+

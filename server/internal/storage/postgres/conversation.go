@@ -111,15 +111,34 @@ func (s *ConversationStorage) FindActiveConversationByCustomer(tenantID, custome
 }
 
 // ListConversations lists conversations for a tenant with pagination
-func (s *ConversationStorage) ListConversations(tenantID string, limit, offset int) ([]*models.Conversation, error) {
-	query := `
-		SELECT id, tenant_id, customer_id, product_id, status, created_at, updated_at
-		FROM conversations
-		WHERE tenant_id = $1
-		ORDER BY updated_at DESC
-		LIMIT $2 OFFSET $3
-	`
-	rows, err := s.client.DB.Query(query, tenantID, limit, offset)
+// If customerID is provided (non-empty), only conversations for that customer are returned
+func (s *ConversationStorage) ListConversations(tenantID string, customerID *string, limit, offset int) ([]*models.Conversation, error) {
+	var query string
+	var args []interface{}
+
+	if customerID != nil && *customerID != "" {
+		// Filter by tenant and customer
+		query = `
+			SELECT id, tenant_id, customer_id, product_id, status, created_at, updated_at
+			FROM conversations
+			WHERE tenant_id = $1 AND customer_id = $2
+			ORDER BY updated_at DESC
+			LIMIT $3 OFFSET $4
+		`
+		args = []interface{}{tenantID, *customerID, limit, offset}
+	} else {
+		// Filter by tenant only (for agents/admins)
+		query = `
+			SELECT id, tenant_id, customer_id, product_id, status, created_at, updated_at
+			FROM conversations
+			WHERE tenant_id = $1
+			ORDER BY updated_at DESC
+			LIMIT $2 OFFSET $3
+		`
+		args = []interface{}{tenantID, limit, offset}
+	}
+
+	rows, err := s.client.DB.Query(query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list conversations: %w", err)
 	}
@@ -128,14 +147,14 @@ func (s *ConversationStorage) ListConversations(tenantID string, limit, offset i
 	var conversations []*models.Conversation
 	for rows.Next() {
 		conv := &models.Conversation{}
-		var customerID sql.NullString
+		var customerIDVal sql.NullString
 		var productID sql.NullString
-		err := rows.Scan(&conv.ID, &conv.TenantID, &customerID, &productID, &conv.Status, &conv.CreatedAt, &conv.UpdatedAt)
+		err := rows.Scan(&conv.ID, &conv.TenantID, &customerIDVal, &productID, &conv.Status, &conv.CreatedAt, &conv.UpdatedAt)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan conversation: %w", err)
 		}
-		if customerID.Valid {
-			conv.CustomerID = &customerID.String
+		if customerIDVal.Valid {
+			conv.CustomerID = &customerIDVal.String
 		}
 		if productID.Valid {
 			conv.ProductID = &productID.String

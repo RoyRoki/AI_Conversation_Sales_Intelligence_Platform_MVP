@@ -237,3 +237,4 @@ func (h *RuleHandler) DeleteRule(c *gin.Context) {
 	c.JSON(http.StatusOK, DeleteRuleResponse{Message: "Rule deleted successfully"})
 }
 
+

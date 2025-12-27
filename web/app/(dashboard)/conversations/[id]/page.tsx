@@ -24,6 +24,7 @@ export default function ConversationDetailPage() {
   const [regeneratingSuggestions, setRegeneratingSuggestions] = useState(false);
   const [showSuggestionsModal, setShowSuggestionsModal] = useState(false);
   const lastCustomerMessageRef = useRef<string | null>(null);
+  const loadingSuggestionsRef = useRef<boolean>(false);
   const canAccessAgent = canAccessAgentFeatures();
 
   useEffect(() => {
@@ -54,18 +55,22 @@ export default function ConversationDetailPage() {
     }
   }, [conversation?.messages, canAccessAgent]);
 
-  // Poll for updates every 5 seconds
+  // Poll for updates every 5 seconds (conversation and auto-reply config only)
+  // Suggestions are loaded on-demand when modal opens or when new customer message is detected
   useEffect(() => {
     if (!conversationId) return;
     const interval = setInterval(() => {
       loadConversation();
       if (canAccessAgent) {
-        loadSuggestions();
         loadAutoReplyConfig();
+        // Only poll suggestions if modal is open
+        if (showSuggestionsModal) {
+          loadSuggestions();
+        }
       }
     }, 5000);
     return () => clearInterval(interval);
-  }, [conversationId, canAccessAgent]);
+  }, [conversationId, canAccessAgent, showSuggestionsModal]);
 
   const loadConversation = async () => {
     try {
@@ -89,9 +94,15 @@ export default function ConversationDetailPage() {
     }
   };
 
-  const loadSuggestions = async () => {
+  const loadSuggestions = async (forceRegenerate: boolean = false) => {
+    // Prevent concurrent requests
+    if (loadingSuggestionsRef.current) {
+      return;
+    }
+    
+    loadingSuggestionsRef.current = true;
     try {
-      const data = await apiClient.getSuggestions(conversationId);
+      const data = await apiClient.getSuggestions(conversationId, forceRegenerate);
       setSuggestions(data);
     } catch (err: any) {
       console.error('Failed to load suggestions:', err);
@@ -100,6 +111,7 @@ export default function ConversationDetailPage() {
     } finally {
       // Ensure regenerating state is cleared
       setRegeneratingSuggestions(false);
+      loadingSuggestionsRef.current = false;
     }
   };
 
@@ -201,13 +213,25 @@ export default function ConversationDetailPage() {
   const handleRegenerateSuggestions = async () => {
     try {
       setRegeneratingSuggestions(true);
-      await loadSuggestions();
+      await loadSuggestions(true); // Pass true to force regeneration
     } catch (err) {
       console.error('Failed to regenerate suggestions:', err);
     } finally {
       setRegeneratingSuggestions(false);
     }
   };
+
+  // Load suggestions when modal opens (if not already loaded)
+  useEffect(() => {
+    if (showSuggestionsModal && canAccessAgent) {
+      // Only load if we don't have suggestions yet
+      const hasSuggestions = suggestions?.suggestions && suggestions.suggestions.length > 0;
+      if (!hasSuggestions && !loadingSuggestionsRef.current) {
+        loadSuggestions();
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showSuggestionsModal, canAccessAgent]);
 
   if (loading) {
     return (

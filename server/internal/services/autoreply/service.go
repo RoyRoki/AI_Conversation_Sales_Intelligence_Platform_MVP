@@ -126,8 +126,8 @@ func (s *AutoReplyService) ProcessAutoReply(tenantID, conversationID string) err
 		return nil
 	}
 
-	// 4. Get AI suggestions
-	suggestionsResp, err := s.agentAssistService.GetReplySuggestions(tenantID, conversationID)
+	// 4. Get AI suggestions (use cached if available, don't force regenerate)
+	suggestionsResp, err := s.agentAssistService.GetReplySuggestions(tenantID, conversationID, false)
 	if err != nil {
 		return fmt.Errorf("failed to get suggestions: %w", err)
 	}

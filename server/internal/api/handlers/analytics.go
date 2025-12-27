@@ -54,8 +54,8 @@ func (h *AnalyticsHandler) GetLeads(c *gin.Context) {
 			conversationIDs[i] = strings.TrimSpace(conversationIDs[i])
 		}
 	} else {
-		// Fetch all conversations for tenant
-		conversations, err := h.ingestionService.ListConversations(tenantID, 1000, 0)
+		// Fetch all conversations for tenant (nil customerID for admin/agent access to all conversations)
+		conversations, err := h.ingestionService.ListConversations(tenantID, nil, 1000, 0)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return

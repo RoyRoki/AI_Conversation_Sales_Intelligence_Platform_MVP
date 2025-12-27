@@ -32,6 +32,7 @@ type GetSuggestionsResponse struct {
 }
 
 // GetSuggestions handles POST /api/conversations/:id/suggestions
+// Query parameter "regenerate" (true/false) can be used to force regeneration and bypass cache
 func (h *AgentAssistHandler) GetSuggestions(c *gin.Context) {
 	conversationID := c.Param("id")
 	if conversationID == "" {
@@ -52,6 +53,9 @@ func (h *AgentAssistHandler) GetSuggestions(c *gin.Context) {
 		return
 	}
 
+	// Check if regenerate is requested (bypass cache)
+	forceRegenerate := c.Query("regenerate") == "true"
+
 	// Check if service is available
 	if h.agentAssistService == nil {
 		log.Printf("[AGENT_ASSIST_HANDLER] agent assist service not initialized")
@@ -64,7 +68,7 @@ func (h *AgentAssistHandler) GetSuggestions(c *gin.Context) {
 		return
 	}
 
-	suggestions, err := h.agentAssistService.GetReplySuggestions(tenantID, conversationID)
+	suggestions, err := h.agentAssistService.GetReplySuggestions(tenantID, conversationID, forceRegenerate)
 	if err != nil {
 		log.Printf("[AGENT_ASSIST_HANDLER] error getting suggestions conversation=%s tenant=%s error=%v", conversationID, tenantID, err)
 		// Service should now always return empty suggestions on error, but handle gracefully just in case
@@ -122,7 +126,8 @@ func (h *AgentAssistHandler) GetInsights(c *gin.Context) {
 	}
 
 	// Get insights (same as suggestions but focused on metadata)
-	suggestions, err := h.agentAssistService.GetReplySuggestions(tenantID, conversationID)
+	// Insights don't need to bypass cache (always use cached if available)
+	suggestions, err := h.agentAssistService.GetReplySuggestions(tenantID, conversationID, false)
 	if err != nil {
 		log.Printf("[AGENT_ASSIST_HANDLER] error getting insights conversation=%s tenant=%s error=%v", conversationID, tenantID, err)
 		// Service should now always return empty suggestions on error, but handle gracefully just in case
