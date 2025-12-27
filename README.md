@@ -72,7 +72,9 @@ The platform follows **Clean Architecture** principles with strict layer boundar
 
 ### Video Explanation
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/MiJjFnMWRK8" title="Platform Overview and Demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+[![Platform Overview and Demo](https://img.youtube.com/vi/MiJjFnMWRK8/maxresdefault.jpg)](https://youtu.be/MiJjFnMWRK8?si=aeVqrEPlruqtTuJF)
+
+*Click the image above to watch the video*
 
 ### Layer Responsibilities
 
