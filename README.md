@@ -72,15 +72,11 @@ The platform follows **Clean Architecture** principles with strict layer boundar
 
 ### Video Explanation
 
-<div align="center">
-  <a href="https://youtu.be/MiJjFnMWRK8?si=aeVqrEPlruqtTuJF">
-    <img src="https://img.youtube.com/vi/MiJjFnMWRK8/maxresdefault.jpg" alt="Platform Overview and Demo" style="width:100%;max-width:560px;">
-  </a>
-</div>
+[![Watch the video](https://img.youtube.com/vi/MiJjFnMWRK8/maxresdefault.jpg)](https://youtu.be/MiJjFnMWRK8?si=aeVqrEPlruqtTuJF)
 
-<p align="center">
-  <a href="https://youtu.be/MiJjFnMWRK8?si=aeVqrEPlruqtTuJF">▶️ Watch on YouTube</a>
-</p>
+**🔗 Direct Link**: [https://youtu.be/MiJjFnMWRK8?si=aeVqrEPlruqtTuJF](https://youtu.be/MiJjFnMWRK8?si=aeVqrEPlruqtTuJF)
+
+> ⚠️ **Note**: GitHub markdown doesn't support embedded video players for security reasons. Click the thumbnail image above or use the direct link to watch the video on YouTube.
 
 ### Layer Responsibilities
 
